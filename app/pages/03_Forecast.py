@@ -8,7 +8,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-st.title("📈 Revenue Forecast")
+st.title("Revenue Forecast")
 st.caption("Projected revenue with confidence intervals")
 
 st.markdown("---")
@@ -108,12 +108,12 @@ summary_data = {
 st.dataframe(summary_data, use_container_width=True, hide_index=True)
 
 st.info(
-    "📊 Real forecast with Monte Carlo simulation will be implemented in Phase 1A."
+    "Real forecast with Monte Carlo simulation will be implemented in Phase 1A."
 )
 
 # Insights
 st.markdown("---")
-st.subheader("📊 Key Insights")
+st.subheader("Key Insights")
 
 col1, col2 = st.columns(2)
 
@@ -124,6 +124,6 @@ with col1:
 
 with col2:
     st.markdown("**Risk Assessment**")
-    st.markdown("⚠️ **Medium Risk**")
+    st.markdown("**Medium Risk**")
     st.caption("Need 2-3 additional deals in pipeline to hit target")
 

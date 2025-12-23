@@ -6,7 +6,7 @@ Shows deals requiring attention, sorted by risk × value.
 
 import streamlit as st
 
-st.title("🎯 Risk This Week")
+st.title("Risk This Week")
 st.caption("Deals requiring attention, sorted by risk × value")
 
 st.markdown("---")
@@ -76,18 +76,18 @@ with st.sidebar:
 st.subheader("At-Risk Deals")
 
 # Placeholder for actual data
-st.info("📊 Data loading will be implemented in Phase 1A after ML pipeline is ready.")
+st.info("Data loading will be implemented in Phase 1A after ML pipeline is ready.")
 
 # Demo table structure
 st.markdown(
     """
 | Deal Name | Stage | Amount | Risk Score | Win Prob | Key Driver | Days Open |
 |-----------|-------|---------|-----------|----------|------------|-----------|
-| Acme Corp | Negotiation | $450K | 🔴 85 | 34% | Stalled | 42 |
-| TechStart Inc | Value Prop | $280K | 🟡 52 | 58% | Slow Rep | 35 |
-| GlobalFin | Needs Analysis | $180K | 🟢 28 | 78% | — | 18 |
+| Acme Corp | Negotiation | $450K | HIGH (85) | 34% | Stalled | 42 |
+| TechStart Inc | Value Prop | $280K | MED (52) | 58% | Slow Rep | 35 |
+| GlobalFin | Needs Analysis | $180K | LOW (28) | 78% | — | 18 |
 """
 )
 
-st.caption("👆 This is demo data. Connect to database to see real deals.")
+st.caption("This is demo data. Connect to database to see real deals.")
 

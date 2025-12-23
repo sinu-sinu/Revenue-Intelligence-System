@@ -9,7 +9,7 @@ import streamlit as st
 # Page configuration
 st.set_page_config(
     page_title="Revenue Intelligence System",
-    page_icon="📊",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -47,7 +47,7 @@ st.markdown(
 )
 
 # Welcome page
-st.title("📊 Revenue Intelligence System")
+st.title("Revenue Intelligence System")
 st.markdown("---")
 
 st.markdown(
@@ -57,10 +57,10 @@ st.markdown(
     **Decision support for sales pipeline management**
     
     This system helps sales leadership:
-    - 🎯 **Identify at-risk deals** using explainable ML
-    - 📈 **Forecast revenue** with uncertainty bands
-    - 🔍 **Understand risk drivers** with clear explanations
-    - ⚡ **Focus attention** where it matters most
+    - **Identify at-risk deals** using explainable ML
+    - **Forecast revenue** with uncertainty bands
+    - **Understand risk drivers** with clear explanations
+    - **Focus attention** where it matters most
     
     ### Get Started
     
@@ -79,17 +79,16 @@ st.markdown(
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("System Status", "🟢 Online")
+    st.metric("System Status", "Online")
 
 with col2:
-    st.metric("Database", "🟢 Connected")
+    st.metric("Database", "Connected")
 
 with col3:
-    st.metric("Models", "🟡 Not Loaded")
+    st.metric("Models", "Not Loaded")
 
 st.info(
-    "👈 **Select a page from the sidebar** to begin exploring your pipeline",
-    icon="ℹ️",
+    "**Select a page from the sidebar** to begin exploring your pipeline"
 )
 
 # Footer
