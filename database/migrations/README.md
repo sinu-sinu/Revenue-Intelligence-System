@@ -18,7 +18,7 @@ For manual migrations:
 docker exec -it revenue_intel_db psql -U app -d revenue_intel
 
 # Or from host (if psql installed)
-psql postgresql://app:dev_password@localhost:5432/revenue_intel -f database/schema.sql
+psql postgresql://app:dev_password@localhost:5433/revenue_intel -f database/schema.sql
 ```
 
 ## Future Migration Pattern

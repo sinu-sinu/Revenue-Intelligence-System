@@ -12,7 +12,7 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 # Database connection
-DATABASE_URL = "postgresql://app:dev_password@localhost:5432/revenue_intel"
+DATABASE_URL = "postgresql://app:dev_password@localhost:5433/revenue_intel"
 
 # Sample data
 INDUSTRIES = ["Technology", "Healthcare", "Finance", "Manufacturing", "Retail"]
@@ -97,7 +97,7 @@ def create_demo_data():
     """,
         accounts,
     )
-    print(f"✓ Created {len(accounts)} accounts")
+    print(f"[OK] Created {len(accounts)} accounts")
 
     # 2. Create Sales Reps
     reps = []
@@ -121,7 +121,7 @@ def create_demo_data():
     """,
         reps,
     )
-    print(f"✓ Created {len(reps)} sales reps")
+    print(f"[OK] Created {len(reps)} sales reps")
 
     # 3. Create Products
     products = []
@@ -137,7 +137,7 @@ def create_demo_data():
     """,
         products,
     )
-    print(f"✓ Created {len(products)} products")
+    print(f"[OK] Created {len(products)} products")
 
     # Get IDs for foreign keys
     cur.execute("SELECT id FROM accounts")
@@ -205,7 +205,7 @@ def create_demo_data():
     """,
         deals,
     )
-    print(f"✓ Created {len(deals)} deals")
+    print(f"[OK] Created {len(deals)} deals")
 
     # 5. Create some stage history for realism
     stage_history = []
@@ -233,13 +233,13 @@ def create_demo_data():
         """,
             stage_history,
         )
-        print(f"✓ Created {len(stage_history)} stage history entries")
+        print(f"[OK] Created {len(stage_history)} stage history entries")
 
     conn.commit()
     cur.close()
     conn.close()
 
-    print("\n✅ Demo data seeded successfully!")
+    print("\n[SUCCESS] Demo data seeded successfully!")
     print("\nQuick Stats:")
     print(f"  - {len(accounts)} Accounts")
     print(f"  - {len(reps)} Sales Reps")

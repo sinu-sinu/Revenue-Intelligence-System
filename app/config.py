@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    database_url: str = "postgresql://app:dev_password@localhost:5432/revenue_intel"
+    database_url: str = "postgresql://app:dev_password@localhost:5433/revenue_intel"
 
     # Paths
     model_path: Path = Path("models/artifacts")
