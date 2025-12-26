@@ -12,11 +12,11 @@ setup: ## Initial setup (Docker, database, demo data)
 
 start: ## Start all services
 	cd docker && docker-compose up -d
-	@echo "✅ Services started. Access UI at http://localhost:8501"
+	@echo " Services started. Access UI at http://localhost:8501"
 
 stop: ## Stop all services
 	cd docker && docker-compose down
-	@echo "✅ Services stopped"
+	@echo " Services stopped"
 
 restart: stop start ## Restart all services
 
