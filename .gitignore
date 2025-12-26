@@ -50,7 +50,6 @@ models/artifacts/*.onnx
 # Data
 data/raw/
 data/interim/
-*.csv
 *.parquet
 *.feather
 
