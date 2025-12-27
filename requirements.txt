@@ -5,8 +5,6 @@ numpy
 scikit-learn
 lightgbm
 shap
-sqlalchemy
-psycopg2-binary
 plotly
 python-dotenv
 pydantic
