@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/sinu2/Desktop/The Project/Project/Revenue Intelligence
+  System/experiments/mlruns/410679505093540817/b00766433b724f08a9e668b485ff9473/artifacts
+end_time: 1766811821949
+entry_point_name: ''
+experiment_id: '410679505093540817'
+lifecycle_stage: active
+run_id: b00766433b724f08a9e668b485ff9473
+run_name: run_20251227_120337_8ae4a26f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766811817987
+status: 3
+tags: []
+user_id: sinu2
