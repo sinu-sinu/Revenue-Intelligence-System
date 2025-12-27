@@ -41,10 +41,18 @@ An internal AI tool that helps sales leadership prioritize pipeline work, unders
 ┌────────────────▼────────────────────────┐
 │          Data Layer                     │
 │  ┌──────────┬──────────┬──────────┐     │
-│  │Postgres │ Models   │ Features │     │
+│  │  CSV     │ Models   │ Features │     │
+│  │  Files   │ Artifacts│ Engine   │     │
 │  └──────────┴──────────┴──────────┘     │
 └─────────────────────────────────────────┘
 ```
+
+**Data Flow:**
+1. CSV files (dataset/) → Training pipeline
+2. Train ML models → Save artifacts
+3. Generate predictions → Save to data/predictions/
+4. Streamlit UI → Load predictions from CSV
+5. Display dashboards, risk scores, forecasts
 
 ---
 
@@ -52,27 +60,16 @@ An internal AI tool that helps sales leadership prioritize pipeline work, unders
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Python 3.10+ (for local development)
+- Python 3.10+ 
+- (Optional) Docker & Docker Compose
 
-### Option 1: Docker (Recommended)
+### Option 1: Local Development (Recommended)
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
 cd revenue-intelligence
 
-# Start all services
-cd docker
-docker-compose up
-
-# Access the app
-open http://localhost:8501
-```
-
-### Option 2: Local Development
-
-```bash
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
@@ -80,18 +77,25 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up environment
-cp .env.example .env
-# Edit .env with your database URL
+# Train models and generate predictions
+python train.py
 
-# Start database (if using Docker)
-cd docker && docker-compose up db -d
-
-# Run migrations and seed data
-python database/seeds/seed_demo_data.py
-
-# Start Streamlit
+# Start Streamlit app
 streamlit run app/main.py
+
+# Access the app at http://localhost:8501
+```
+
+### Option 2: Docker
+
+```bash
+# Start the app
+docker-compose up app
+
+# Run training (optional)
+docker-compose --profile training up trainer
+
+# Access the app at http://localhost:8501
 ```
 
 ---
@@ -100,21 +104,27 @@ streamlit run app/main.py
 
 ```
 revenue-intelligence/
-├── app/                    # Streamlit UI
+├── app/                   # Streamlit UI
 │   ├── main.py            # Entry point
 │   ├── config.py          # Configuration
-│   └── pages/             # Multi-page app
-├── core/                   # Business logic
-│   ├── data/              # Data access & features
+│   ├── pages/             # Multi-page app
+│   ├── components/        # Reusable UI components
+│   └── services/          # Data loading services
+├── core/                  # Business logic
+│   ├── data/              # Feature engineering
 │   ├── scoring/           # Risk & win probability
 │   ├── forecasting/       # Revenue forecasting
 │   └── explanations/      # SHAP explainability
-├── models/                 # ML models
+├── models/                # ML models
 │   ├── training/          # Training scripts
 │   ├── evaluation/        # Evaluation metrics
+│   ├── inference/         # Prediction generation
 │   └── artifacts/         # Saved models
-├── database/              # Database schema & seeds
+├── data/                  # Generated data
+│   └── predictions/       # Precomputed predictions
+├── dataset/               # Raw training data (CSV)
 ├── docker/                # Docker configuration
+├── experiments/           # MLflow tracking
 ├── tests/                 # Test suite
 ├── notebooks/             # EDA & experiments
 └── plan/                  # Project planning docs
@@ -124,21 +134,25 @@ revenue-intelligence/
 
 ## 📊 Data
 
-The system works with standard CRM opportunity data:
+The system uses **CSV-based data storage** for simplicity and portability.
 
-**Core Entities:**
-- Deals/Opportunities
-- Accounts
-- Sales Representatives
-- Products
+**Training Data** (`dataset/`):
+- `sales_pipeline.csv` - Deal/opportunity data
+- `accounts.csv` - Customer accounts
+- `sales_teams.csv` - Sales representatives
+- `products.csv` - Product catalog
 
-**Demo Data:** Included seed script creates realistic sample data for development.
+**Generated Data** (`data/predictions/`):
+- `latest_predictions.csv` - Precomputed predictions with risk scores
+- `predictions_metadata.json` - Metadata about predictions
 
-**Production Data:** Design supports loading from:
-- Salesforce
-- HubSpot
-- CSV exports
+**Demo Data:** Included MavenTech CRM dataset with ~8,800 opportunities.
+
+**Production Ready:** Design supports loading from:
+- Salesforce CSV exports
+- HubSpot exports
 - Custom CRM systems
+- Easy to adapt data loader for APIs
 
 ---
 

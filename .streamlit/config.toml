@@ -1,4 +1,5 @@
 [theme]
+# Dark theme with indigo accent
 primaryColor = "#4F46E5"
 backgroundColor = "#0F172A"
 secondaryBackgroundColor = "#1E293B"
@@ -6,10 +7,7 @@ textColor = "#F8FAFC"
 font = "sans serif"
 
 [server]
-port = 8501
-enableCORS = false
-enableXsrfProtection = true
+maxUploadSize = 5
 
 [browser]
 gatherUsageStats = false
-
