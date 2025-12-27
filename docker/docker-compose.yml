@@ -1,46 +1,29 @@
 services:
-  # PostgreSQL Database
-  db:
-    image: postgres:15-alpine
-    container_name: revenue_intel_db
-    environment:
-      POSTGRES_DB: revenue_intel
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: dev_password
-      POSTGRES_HOST_AUTH_METHOD: md5
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ../database/seeds:/docker-entrypoint-initdb.d/seeds
-    ports:
-      - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d revenue_intel"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Streamlit Application
   app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: revenue_intel_app
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://app:dev_password@db:5432/revenue_intel
       - MODEL_PATH=/app/models/artifacts
       - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
     volumes:
       - ../app:/app/app
       - ../core:/app/core
       - ../models:/app/models
+      - ../data:/app/data
+      - ../dataset:/app/dataset
       - ../logs:/app/logs
     ports:
       - "8501:8501"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Model Training Container (run on-demand)
   trainer:
@@ -48,25 +31,22 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.trainer
     container_name: revenue_intel_trainer
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://app:dev_password@db:5432/revenue_intel
       - MODEL_PATH=/app/models/artifacts
       - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
     volumes:
       - ../core:/app/core
       - ../models:/app/models
+      - ../dataset:/app/dataset
+      - ../data:/app/data
+      - ../experiments:/app/experiments
       - ../logs:/app/logs
     profiles:
-      - training
-
-volumes:
-  postgres_data:
-    name: revenue_intel_postgres
+      - training  # Only start when explicitly requested with: docker-compose --profile training up trainer
 
 networks:
   default:
     name: revenue_intel_network
+
 
