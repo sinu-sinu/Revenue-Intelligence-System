@@ -60,6 +60,18 @@ class WinProbabilityTrainer:
         "random_state": 42,
     }
     
+    # Monotonic constraints for features where direction is known
+    # -1 = decreasing (higher value -> lower win prob)
+    #  0 = no constraint
+    # +1 = increasing (higher value -> higher win prob)
+    # WHY: Prevents overfitting by enforcing business logic
+    # NOTE: Only apply when feature is part of feature set
+    MONOTONIC_FEATURES = {
+        # Disabled for now - too aggressive, hurts AUC
+        # "days_in_engaging": -1,       # Longer deals are less likely to win
+        # "engagement_stage_num": -1,   # Stale deals are less likely to win
+    }
+    
     def __init__(
         self,
         categorical_features: List[str],
@@ -238,6 +250,25 @@ class WinProbabilityTrainer:
             valid_sets.append(val_data)
             valid_names.append("valid")
         
+        # Build monotonic constraints based on features used
+        # WHY: Enforces business logic (e.g., longer deals = lower win prob)
+        # This prevents overfitting to spurious patterns
+        monotonic_constraints = []
+        for col in feature_cols:
+            if col in self.MONOTONIC_FEATURES:
+                monotonic_constraints.append(self.MONOTONIC_FEATURES[col])
+            else:
+                monotonic_constraints.append(0)  # No constraint
+        
+        # Add monotonic constraints to params if any are non-zero
+        train_params = self.LGBM_PARAMS.copy()
+        if any(c != 0 for c in monotonic_constraints):
+            train_params["monotone_constraints"] = monotonic_constraints
+            constrained_features = [
+                feature_cols[i] for i, c in enumerate(monotonic_constraints) if c != 0
+            ]
+            logger.info(f"Monotonic constraints applied to: {constrained_features}")
+        
         # Train with callbacks
         callbacks = [
             lgb.log_evaluation(period=100),
@@ -246,7 +277,7 @@ class WinProbabilityTrainer:
             callbacks.append(lgb.early_stopping(stopping_rounds=early_stopping_rounds))
         
         self.lgbm_model = lgb.train(
-            self.LGBM_PARAMS,
+            train_params,
             train_data,
             num_boost_round=num_boost_round,
             valid_sets=valid_sets,

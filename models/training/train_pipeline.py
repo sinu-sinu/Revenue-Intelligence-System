@@ -34,6 +34,7 @@ from core.data.features import (
     NUMERIC_FEATURES,
     get_feature_documentation,
     get_feature_tier,
+    apply_enhanced_features,
 )
 from models.training.win_probability import WinProbabilityTrainer
 from models.training.time_to_close import TimeToCloseTrainer
@@ -136,6 +137,30 @@ def train_pipeline(
     results["test_samples"] = len(test_df)
     results["train_win_rate"] = train_df["target"].mean()
     results["test_win_rate"] = test_df["target"].mean()
+    
+    # =========================================================================
+    # Step 3.5: Enhanced Features (for 'enhanced' tier only)
+    # =========================================================================
+    if feature_tier == "enhanced":
+        logger.info("Applying enhanced feature engineering...")
+        
+        # Apply enhanced features AFTER split to prevent target leakage
+        # Target encoding uses only training data
+        train_df, test_df, encoding_maps = apply_enhanced_features(
+            train_df, test_df, target_col="target"
+        )
+        
+        # Re-check available features after enhancement
+        available_categorical = [c for c in tier_categorical if c in train_df.columns]
+        available_numeric = [c for c in tier_numeric if c in train_df.columns]
+        all_features = available_categorical + available_numeric
+        
+        logger.info(f"Enhanced categorical: {available_categorical}")
+        logger.info(f"Enhanced numeric: {available_numeric}")
+        
+        results["features_used"] = all_features
+        results["n_features"] = len(all_features)
+        results["encoding_maps_keys"] = list(encoding_maps.keys())
     
     # Log parameters to tracker
     tracker.log_params({
@@ -309,8 +334,8 @@ def main():
         "--feature-tier",
         type=str,
         default="standard",
-        choices=["minimal", "standard", "full"],
-        help="Feature set tier: minimal, standard, or full (default: standard)"
+        choices=["minimal", "standard", "full", "enhanced"],
+        help="Feature set tier: minimal, standard, full, or enhanced (default: standard)"
     )
     
     args = parser.parse_args()

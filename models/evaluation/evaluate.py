@@ -8,6 +8,7 @@ Key responsibilities:
 - Compute calibration metrics (Brier, ECE)
 - Generate reliability diagrams
 - Detect feature/prediction drift
+- Business metrics (lift, top-k precision, ranking quality)
 """
 
 import pandas as pd
@@ -27,6 +28,15 @@ from sklearn.metrics import (
     roc_curve
 )
 from scipy import stats
+
+# Import business metrics
+from models.evaluation.business_metrics import (
+    compute_lift_curve,
+    compute_top_k_precision,
+    compute_rank_correlation,
+    compute_expected_revenue_impact,
+    print_business_metrics_report
+)
 
 logger = logging.getLogger(__name__)
 
@@ -431,6 +441,37 @@ def print_evaluation_report(result: EvaluationResult) -> None:
     print(f"  Positive Rate: {result.positive_rate:.2%}")
     
     print("\n" + "=" * 60)
+
+
+def print_full_report(
+    y_true: np.ndarray,
+    y_pred_proba: np.ndarray,
+    deals_df: pd.DataFrame = None,
+    include_business_metrics: bool = True
+) -> EvaluationResult:
+    """
+    Print complete evaluation report including statistical and business metrics.
+    
+    Args:
+        y_true: True binary labels
+        y_pred_proba: Predicted probabilities
+        deals_df: Optional DataFrame with deal values for revenue impact
+        include_business_metrics: Whether to include business metrics
+        
+    Returns:
+        EvaluationResult object
+    """
+    evaluator = ModelEvaluator()
+    result = evaluator.full_evaluation(y_true, y_pred_proba)
+    
+    # Print statistical metrics
+    print_evaluation_report(result)
+    
+    # Print business metrics
+    if include_business_metrics:
+        print_business_metrics_report(y_true, y_pred_proba, deals_df)
+    
+    return result
 
 
 if __name__ == "__main__":
