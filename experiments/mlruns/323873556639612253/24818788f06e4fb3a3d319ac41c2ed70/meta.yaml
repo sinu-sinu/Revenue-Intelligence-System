@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/sinu2/Desktop/The Project/Project/Revenue Intelligence
+  System/experiments/mlruns/323873556639612253/24818788f06e4fb3a3d319ac41c2ed70/artifacts
+end_time: 1766808372733
+entry_point_name: ''
+experiment_id: '323873556639612253'
+lifecycle_stage: active
+run_id: 24818788f06e4fb3a3d319ac41c2ed70
+run_name: upset-cat-199
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1766808372679
+status: 3
+tags: []
+user_id: sinu2
