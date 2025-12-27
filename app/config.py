@@ -11,11 +11,11 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    # Database
-    database_url: str = "postgresql://app:dev_password@localhost:5433/revenue_intel"
-
     # Paths
     model_path: Path = Path("models/artifacts")
+    data_path: Path = Path("data")
+    predictions_path: Path = Path("data/predictions/latest_predictions.csv")
+    dataset_path: Path = Path("dataset")
     log_path: Path = Path("logs")
 
     # Logging
@@ -44,5 +44,7 @@ settings = Settings()
 
 # Ensure directories exist
 settings.model_path.mkdir(parents=True, exist_ok=True)
+settings.data_path.mkdir(parents=True, exist_ok=True)
 settings.log_path.mkdir(parents=True, exist_ok=True)
+
 
