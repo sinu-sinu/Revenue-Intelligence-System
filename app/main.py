@@ -1,97 +1,238 @@
 """
-Revenue Intelligence System - Main Streamlit Application
+Revenue Intelligence System - Streamlit Dashboard
+Phase 1B: UI Implementation
 
-This is the entry point for the Streamlit application.
+This is the main entry point for the Streamlit application.
+Run with: streamlit run app/main.py
 """
 
 import streamlit as st
+import sys
+from pathlib import Path
 
-# Page configuration
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+
+# Page configuration - MUST be first Streamlit command
 st.set_page_config(
-    page_title="Revenue Intelligence System",
-    page_icon=None,
+    page_title="Revenue Intelligence",
+    page_icon="::chart_with_upwards_trend::",
     layout="wide",
     initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": "Revenue Intelligence System - AI-powered deal risk assessment"
+    }
 )
 
-# Custom CSS for better styling
-st.markdown(
-    """
+
+def load_custom_css():
+    """Load custom CSS styling."""
+    st.markdown("""
     <style>
-    .main {
-        padding: 0rem 1rem;
-    }
+    /* Dark theme enhancements */
     .stMetric {
-        background-color: #1E293B;
+        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
         padding: 1rem;
-        border-radius: 0.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid #334155;
     }
-    .risk-high {
-        color: #EF4444;
-        font-weight: bold;
+    
+    .stMetric label {
+        color: #94A3B8 !important;
+        font-size: 0.875rem;
     }
-    .risk-med {
-        color: #F59E0B;
-        font-weight: bold;
+    
+    .stMetric [data-testid="stMetricValue"] {
+        color: #F8FAFC !important;
+        font-size: 1.75rem;
+        font-weight: 700;
     }
-    .risk-low {
-        color: #10B981;
-        font-weight: bold;
+    
+    /* Risk colors */
+    .risk-low { color: #10B981; font-weight: 600; }
+    .risk-medium { color: #F59E0B; font-weight: 600; }
+    .risk-high { color: #EF4444; font-weight: 600; }
+    .risk-critical { color: #DC2626; font-weight: 700; }
+    
+    /* Card styling */
+    .card {
+        background: #1E293B;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #334155;
+        margin-bottom: 1rem;
     }
+    
+    /* Table styling */
+    .dataframe {
+        font-size: 0.875rem;
+    }
+    
+    /* Header styling */
     h1 {
-        color: #4F46E5;
+        color: #F8FAFC;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    h2 {
+        color: #E2E8F0;
+        font-weight: 600;
+        margin-top: 2rem;
+    }
+    
+    h3 {
+        color: #CBD5E1;
+        font-weight: 600;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+    }
+    
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stMultiSelect label {
+        color: #94A3B8;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #4F46E5, #818CF8);
     }
     </style>
-    """,
-    unsafe_allow_html=True,
-)
+    """, unsafe_allow_html=True)
 
-# Welcome page
-st.title("Revenue Intelligence System")
-st.markdown("---")
 
-st.markdown(
-    """
-    ## Welcome to Revenue Intelligence
+def main():
+    """Main application entry point."""
+    # Load custom styling
+    load_custom_css()
     
-    **Decision support for sales pipeline management**
+    # Sidebar - Navigation & Info
+    with st.sidebar:
+        st.image("https://via.placeholder.com/150x50/4F46E5/FFFFFF?text=RevIntel", width=150)
+        st.markdown("---")
+        
+        st.markdown("### Navigation")
+        st.markdown("""
+        - **Risk Dashboard** - At-risk deals
+        - **Deal Detail** - Drill into specific deals
+        - **Forecast** - Revenue projections
+        """)
+        
+        st.markdown("---")
+        
+        st.markdown("### About")
+        st.caption("""
+        Revenue Intelligence System  
+        Phase 1B - Streamlit UI
+        
+        Model: LightGBM + Isotonic Calibration  
+        AUC: 0.58 | ECE: 0.031
+        """)
+        
+        # Refresh button
+        st.markdown("---")
+        if st.button("Refresh Data", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
     
-    This system helps sales leadership:
-    - **Identify at-risk deals** using explainable ML
-    - **Forecast revenue** with uncertainty bands
-    - **Understand risk drivers** with clear explanations
-    - **Focus attention** where it matters most
+    # Main content
+    st.title("Revenue Intelligence")
+    st.caption("AI-powered deal risk assessment and forecasting")
     
-    ### Get Started
+    st.markdown("---")
     
-    Use the sidebar to navigate to:
-    - **Risk Dashboard** - See deals requiring attention
-    - **Deal Details** - Deep dive into specific opportunities
-    - **Forecast** - View revenue projections with confidence intervals
+    # Quick stats
+    try:
+        from app.services.data_loader import DataLoader
+        loader = DataLoader()
+        stats = loader.get_summary_stats()
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            at_risk = stats.get("at_risk_revenue", 0)
+            if at_risk >= 1_000_000:
+                at_risk_str = f"${at_risk/1_000_000:.1f}M"
+            elif at_risk >= 1_000:
+                at_risk_str = f"${at_risk/1_000:.0f}K"
+            else:
+                at_risk_str = f"${at_risk:.0f}"
+            st.metric("At-Risk Revenue", at_risk_str)
+        
+        with col2:
+            high_risk = stats.get("high_risk_count", 0)
+            st.metric("High Risk Deals", high_risk)
+        
+        with col3:
+            avg_prob = stats.get("avg_win_probability", 0)
+            st.metric("Avg Win Probability", f"{avg_prob:.0%}")
+        
+        with col4:
+            total = stats.get("total_deals", 0)
+            st.metric("Total Active Deals", total)
+        
+        st.markdown("---")
+        
+        # Risk distribution
+        st.markdown("### Risk Distribution")
+        
+        risk_dist = stats.get("risk_distribution", {})
+        if risk_dist:
+            cols = st.columns(4)
+            categories = ["Critical", "High", "Medium", "Low"]
+            colors = {"Critical": "#DC2626", "High": "#EF4444", "Medium": "#F59E0B", "Low": "#10B981"}
+            
+            for i, cat in enumerate(categories):
+                count = risk_dist.get(cat, 0)
+                with cols[i]:
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 1rem; background: #1E293B; border-radius: 0.5rem; border-left: 4px solid {colors[cat]};">
+                        <div style="font-size: 2rem; font-weight: 700; color: {colors[cat]};">{count}</div>
+                        <div style="color: #94A3B8;">{cat}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Navigate to pages
+        st.info("Use the sidebar navigation or click below to view detailed pages.")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.page_link("pages/01_Risk_Dashboard.py", label="Risk Dashboard", icon="::target::")
+        
+        with col2:
+            st.page_link("pages/02_Deal_Detail.py", label="Deal Detail", icon="::mag::")
+        
+        with col3:
+            st.page_link("pages/03_Forecast.py", label="Revenue Forecast", icon="::chart_with_upwards_trend::")
     
-    ---
-    
-    ### Current Status
-    """
-)
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        st.info("Make sure predictions have been generated. Run: python models/inference/predict.py")
 
-# Connection status
-col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.metric("System Status", "Online")
-
-with col2:
-    st.metric("Database", "Connected")
-
-with col3:
-    st.metric("Models", "Not Loaded")
-
-st.info(
-    "**Select a page from the sidebar** to begin exploring your pipeline"
-)
-
-# Footer
-st.markdown("---")
-st.caption("Revenue Intelligence System v1.0.0 | Built with Streamlit")
-
+if __name__ == "__main__":
+    main()
