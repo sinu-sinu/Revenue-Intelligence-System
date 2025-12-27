@@ -33,3 +33,6 @@ seaborn
 jupyter
 ipykernel
 
+# Experiment tracking (optional - JSON tracking works without it)
+mlflow
+
