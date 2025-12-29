@@ -79,6 +79,13 @@ docker-compose.override.yml
 # OS
 Thumbs.db
 
+# MLflow experiments (can be large, regenerated via training)
+experiments/mlruns/
+
+# Generated predictions (regenerated via inference)
+# Uncomment if you want to exclude predictions from git:
+# data/predictions/
+
 #additional files
 plan/
 scripts/

@@ -18,7 +18,7 @@ sys.path.insert(0, str(project_root))
 # Page configuration - MUST be first Streamlit command
 st.set_page_config(
     page_title="Revenue Intelligence",
-    page_icon="::chart_with_upwards_trend::",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
@@ -129,7 +129,13 @@ def main():
     
     # Sidebar - Navigation & Info
     with st.sidebar:
-        st.image("https://via.placeholder.com/150x50/4F46E5/FFFFFF?text=RevIntel", width=150)
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%); 
+                    padding: 0.75rem 1rem; border-radius: 0.5rem; text-align: center;
+                    margin-bottom: 0.5rem;">
+            <span style="color: white; font-weight: 700; font-size: 1.25rem;">📈 RevIntel</span>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown("---")
         
         st.markdown("### Navigation")
@@ -221,13 +227,13 @@ def main():
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.page_link("pages/01_Risk_Dashboard.py", label="Risk Dashboard", icon="::target::")
+            st.page_link("pages/01_Risk_Dashboard.py", label="Risk Dashboard", icon="🎯")
         
         with col2:
-            st.page_link("pages/02_Deal_Detail.py", label="Deal Detail", icon="::mag::")
+            st.page_link("pages/02_Deal_Detail.py", label="Deal Detail", icon="🔍")
         
         with col3:
-            st.page_link("pages/03_Forecast.py", label="Revenue Forecast", icon="::chart_with_upwards_trend::")
+            st.page_link("pages/03_Forecast.py", label="Revenue Forecast", icon="📊")
     
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")

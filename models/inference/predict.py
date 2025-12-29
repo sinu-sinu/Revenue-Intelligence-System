@@ -201,9 +201,11 @@ class DealPredictor:
             deals["engage_quarter"] = deals["engage_date"].dt.quarter
             deals["engage_day_of_week"] = deals["engage_date"].dt.dayofweek
             
-            # Days in stage (from today or close_date)
-            today = datetime.now()
-            deals["days_in_engaging"] = (today - deals["engage_date"]).dt.days
+            # Days in stage - use dataset's latest date as "today" for realistic calculations
+            # The dataset is from 2016-2017, so using current date would give 3000+ days
+            # Instead, simulate as if "today" is the end of the dataset period
+            dataset_end_date = deals["engage_date"].max() + pd.Timedelta(days=30)
+            deals["days_in_engaging"] = (dataset_end_date - deals["engage_date"]).dt.days
         
         return deals
     
@@ -383,8 +385,13 @@ class DealPredictor:
             risk_score, risk_cat = self._compute_risk_score(win_prob, days, price)
             
             # Time to close prediction
-            pred_days = int(60 + days * 0.3 + np.random.normal(0, 10))
-            pred_days = max(7, pred_days)
+            # Use a more realistic distribution: shorter for newer deals, longer for older ones
+            # This ensures some deals close soon (for forecast visibility)
+            base_close = 14 + np.random.exponential(21)  # Mean of ~35 days
+            # Older deals slightly longer to close
+            age_factor = min(days / 365, 1) * 20  # Up to 20 extra days for oldest deals
+            pred_days = int(base_close + age_factor + np.random.normal(0, 7))
+            pred_days = max(7, min(pred_days, 120))  # Clamp to 7-120 days
             
             # Risk drivers
             drivers = self._generate_risk_drivers(win_prob, days, price)

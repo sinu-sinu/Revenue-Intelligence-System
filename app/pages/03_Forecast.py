@@ -28,7 +28,7 @@ except ImportError:
 # Page config
 st.set_page_config(
     page_title="Revenue Forecast - Revenue Intelligence",
-    page_icon="::chart_with_upwards_trend::",
+    page_icon="📊",
     layout="wide"
 )
 

@@ -2,7 +2,7 @@
 
 > AI-powered decision support for sales pipeline management
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An internal AI tool that helps sales leadership prioritize pipeline work, understand forecast risk, and intervene earlier using **explainable ML**.
@@ -48,11 +48,12 @@ An internal AI tool that helps sales leadership prioritize pipeline work, unders
 ```
 
 **Data Flow:**
-1. CSV files (dataset/) → Training pipeline
-2. Train ML models → Save artifacts
-3. Generate predictions → Save to data/predictions/
-4. Streamlit UI → Load predictions from CSV
-5. Display dashboards, risk scores, forecasts
+1. CSV files (dataset/) → Feature engineering
+2. Generate predictions → Save to `data/predictions/latest_predictions.csv`
+3. Streamlit UI → Load predictions from CSV (cached)
+4. Display dashboards, risk scores, forecasts
+
+**Note:** For historical datasets (e.g., 2016-2017 demo data), the system automatically adjusts date calculations to simulate realistic scenarios.
 
 ---
 
@@ -60,7 +61,7 @@ An internal AI tool that helps sales leadership prioritize pipeline work, unders
 
 ### Prerequisites
 
-- Python 3.10+ 
+- Python 3.12+ (or 3.10+)
 - (Optional) Docker & Docker Compose
 
 ### Option 1: Local Development (Recommended)
@@ -77,8 +78,8 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Train models and generate predictions
-python train.py
+# Generate predictions (required before running app)
+python models/inference/predict.py
 
 # Start Streamlit app
 streamlit run app/main.py
@@ -89,6 +90,9 @@ streamlit run app/main.py
 ### Option 2: Docker
 
 ```bash
+# Navigate to docker directory
+cd docker
+
 # Start the app
 docker-compose up app
 
@@ -146,7 +150,7 @@ The system uses **CSV-based data storage** for simplicity and portability.
 - `latest_predictions.csv` - Precomputed predictions with risk scores
 - `predictions_metadata.json` - Metadata about predictions
 
-**Demo Data:** Included MavenTech CRM dataset with ~8,800 opportunities.
+**Demo Data:** Included MavenTech CRM dataset with ~8,800 opportunities from 2016-2017. The system automatically handles historical dates for realistic predictions (see [Technical Docs](docs/TECHNICAL_DOCS.md#historical-dataset-handling)).
 
 **Production Ready:** Design supports loading from:
 - Salesforce CSV exports
@@ -170,9 +174,9 @@ The system uses **CSV-based data storage** for simplicity and portability.
 - **Components:** Win probability, deal size, velocity, stagnation
 
 ### Time-to-Close Model
-- **Algorithm:** Quantile regression
-- **Output:** P10/P50/P90 distributions
-- **Use:** Forecast timing, not point estimates
+- **Algorithm:** Exponential distribution with age-based adjustments
+- **Output:** Days until close (7-120 day range)
+- **Use:** Weekly revenue forecasting with uncertainty bands
 
 ---
 
@@ -184,9 +188,6 @@ pytest
 
 # Run with coverage
 pytest --cov=. --cov-report=html
-
-# Run integration tests (requires database)
-pytest -m integration
 ```
 
 ---
@@ -196,23 +197,26 @@ pytest -m integration
 ### ✅ Phase 0: Foundation (Complete)
 - Project structure
 - Docker environment
-- Database schema
+- CSV-based data storage
 - Basic Streamlit UI
 
-### 🚧 Phase 1A: ML Pipeline (In Progress)
+### ✅ Phase 1A: ML Pipeline (Complete)
 - Feature engineering
 - Model training & calibration
-- SHAP explanations
 - Risk scoring
+- Prediction generation
 
-### 📋 Phase 1B: UI Enhancement
+### ✅ Phase 1B: UI Enhancement (Complete)
 - Connect UI to models
-- Real-time scoring
+- Precomputed scoring
 - Interactive visualizations
+- Risk Dashboard
+- Deal Detail pages
+- Revenue Forecast
 
-### 📋 Phase 1C: Polish
+### 🚧 Phase 1C: Polish (In Progress)
 - Testing
-- Documentation
+- Documentation ✅
 - Demo preparation
 
 ### 🔮 Phase 2: Vue Refactor (Optional)
@@ -249,6 +253,8 @@ pre-commit run --all-files
 
 ## 📝 Documentation
 
+- **[User Guide](docs/USER_GUIDE.md)** - End-user documentation for the Streamlit app
+- **[Technical Docs](docs/TECHNICAL_DOCS.md)** - Developer guide and API reference
 - [Project Roadmap](plan/00_ROADMAP.md)
 - [Data Specification](plan/06_DATA_SPEC.md)
 - [Model Specification](plan/07_MODEL_SPEC.md)
@@ -276,7 +282,7 @@ MIT License - see LICENSE file for details
 ## 🙏 Acknowledgments
 
 - Inspired by modern RevOps best practices
-- Built with Streamlit, LightGBM, and PostgreSQL
+- Built with Streamlit, LightGBM, and CSV-based data storage
 - SHAP for model explainability
 
 ---

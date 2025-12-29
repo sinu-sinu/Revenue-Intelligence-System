@@ -21,7 +21,7 @@ from app.components.risk_badge import risk_color, risk_badge_html
 # Page config
 st.set_page_config(
     page_title="Deal Detail - Revenue Intelligence",
-    page_icon="::mag::",
+    page_icon="🔍",
     layout="wide"
 )
 
@@ -288,10 +288,10 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        st.page_link("pages/01_Risk_Dashboard.py", label="Back to Dashboard", icon="::arrow_left::")
+        st.page_link("pages/01_Risk_Dashboard.py", label="Back to Dashboard", icon="⬅️")
     
     with col3:
-        st.page_link("pages/03_Forecast.py", label="View Forecast", icon="::chart_with_upwards_trend::")
+        st.page_link("pages/03_Forecast.py", label="View Forecast", icon="📊")
 
 
 if __name__ == "__main__":

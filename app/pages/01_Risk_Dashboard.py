@@ -23,7 +23,7 @@ from app.components.risk_badge import risk_color
 # Page config
 st.set_page_config(
     page_title="Risk Dashboard - Revenue Intelligence",
-    page_icon="::target::",
+    page_icon="🎯",
     layout="wide"
 )
 
@@ -240,7 +240,7 @@ def main():
                 return "background-color: #10B981; color: white; font-weight: bold"
             return ""
         
-        styled = table_df.style.applymap(
+        styled = table_df.style.map(
             highlight_risk, 
             subset=["Status"] if "Status" in table_df.columns else []
         )
@@ -290,7 +290,7 @@ def main():
             st.page_link(
                 "pages/02_Deal_Detail.py",
                 label=f"View Full Details for {selected_deal}",
-                icon="::arrow_right::"
+                icon="➡️"
             )
             
             # Store selected deal in session state for detail page

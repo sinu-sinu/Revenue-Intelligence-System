@@ -82,7 +82,7 @@ def deal_table(
             return f"color: {color}; font-weight: bold"
         return ""
     
-    styled_df = display_df.style.applymap(
+    styled_df = display_df.style.map(
         style_risk,
         subset=["Status"] if "Status" in display_df.columns else []
     )
