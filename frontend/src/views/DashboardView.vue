@@ -96,8 +96,7 @@ const riskDistribution = computed(() => {
             ]"
           >
             <!-- Glow effect -->
-            <div :class="['absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 rounded-b-full blur-sm', item.color]" />
-
+            
             <p :class="['text-4xl font-bold font-mono tracking-tight', item.textColor]">
               {{ item.count }}
             </p>

@@ -101,3 +101,20 @@ export interface ForecastResponse {
   deal_forecasts: DealForecast[]
   summary: ForecastSummary
 }
+
+// SHAP Explanation types
+export interface FeatureContribution {
+  feature: string
+  value: any
+  contribution: number
+  explanation: string
+}
+
+export interface DealExplanation {
+  opportunity_id: string
+  win_probability: number
+  base_value: number
+  top_positive: FeatureContribution[]
+  top_negative: FeatureContribution[]
+  summary_text: string
+}

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type {
   DealDetail,
+  DealExplanation,
   DealFilters,
   DealListResponse,
   FilterOptions,
@@ -54,6 +55,11 @@ export async function getDeals(filters: DealFilters = {}): Promise<DealListRespo
 
 export async function getDeal(id: string): Promise<DealDetail> {
   const { data } = await api.get<DealDetail>(`/deals/${id}`)
+  return data
+}
+
+export async function getDealExplanation(id: string): Promise<DealExplanation> {
+  const { data } = await api.get<DealExplanation>(`/deals/${id}/explanation`)
   return data
 }
 
