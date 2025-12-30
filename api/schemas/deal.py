@@ -1,6 +1,6 @@
 """Deal-related Pydantic schemas."""
 
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -71,3 +71,28 @@ class FilterOptions(BaseModel):
         default=["Critical", "High", "Medium", "Low"],
         description="Risk category options"
     )
+
+
+# SHAP Explanation schemas
+class FeatureContribution(BaseModel):
+    """A single feature's contribution to the prediction."""
+    feature: str = Field(..., description="Human-readable feature name")
+    value: Any = Field(..., description="Actual feature value")
+    contribution: float = Field(..., description="SHAP contribution value")
+    explanation: str = Field(..., description="Human-readable explanation")
+
+
+class DealExplanation(BaseModel):
+    """SHAP-based model explanation for a deal prediction."""
+    opportunity_id: str = Field(..., description="Deal identifier")
+    win_probability: float = Field(..., ge=0, le=1, description="Predicted win probability")
+    base_value: float = Field(..., description="Model's base prediction value")
+    top_positive: list[FeatureContribution] = Field(
+        default_factory=list,
+        description="Features increasing win probability"
+    )
+    top_negative: list[FeatureContribution] = Field(
+        default_factory=list,
+        description="Features decreasing win probability"
+    )
+    summary_text: str = Field(..., description="Summary of key factors")

@@ -17,7 +17,10 @@ from api.schemas.deal import (
     SummaryStats,
     FilterOptions,
     RiskDriver,
+    DealExplanation,
+    FeatureContribution,
 )
+from api.services.explainer_service import get_explainer_service
 
 router = APIRouter(prefix="/deals", tags=["deals"])
 
@@ -180,3 +183,73 @@ async def get_deal(deal_id: str):
         raise HTTPException(status_code=404, detail=f"Deal {deal_id} not found")
 
     return _row_to_detail(deal)
+
+
+@router.get("/{deal_id}/explanation", response_model=DealExplanation)
+async def get_deal_explanation(deal_id: str):
+    """
+    Get SHAP-based model explanation for a deal prediction.
+
+    Returns feature contributions showing which factors increase or decrease
+    the predicted win probability. Calculations are performed on-demand.
+    """
+    # Get deal data
+    deal = data_loader.get_deal(deal_id)
+    if deal is None:
+        raise HTTPException(status_code=404, detail=f"Deal {deal_id} not found")
+
+    # Get explainer service
+    explainer = get_explainer_service()
+
+    # Check if available
+    if not explainer.is_available():
+        error = explainer.get_error()
+        raise HTTPException(
+            status_code=503,
+            detail=f"SHAP explanations unavailable: {error}"
+        )
+
+    # Convert deal row to dict for explainer
+    deal_data = {
+        "opportunity_id": deal.get("opportunity_id"),
+        "account": deal.get("account"),
+        "sales_agent": deal.get("sales_agent"),
+        "product": deal.get("product"),
+        "deal_stage": deal.get("deal_stage", "Engaging"),
+        "engage_date": deal.get("engage_date"),
+    }
+
+    # Generate explanation
+    explanation = explainer.explain_deal(deal_data, deal_id)
+
+    if explanation is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate explanation for this deal"
+        )
+
+    # Convert to response model
+    return DealExplanation(
+        opportunity_id=explanation.opportunity_id,
+        win_probability=explanation.win_probability,
+        base_value=explanation.base_value,
+        top_positive=[
+            FeatureContribution(
+                feature=fc.feature,
+                value=fc.value,
+                contribution=fc.contribution,
+                explanation=fc.explanation
+            )
+            for fc in explanation.top_positive
+        ],
+        top_negative=[
+            FeatureContribution(
+                feature=fc.feature,
+                value=fc.value,
+                contribution=fc.contribution,
+                explanation=fc.explanation
+            )
+            for fc in explanation.top_negative
+        ],
+        summary_text=explanation.summary_text
+    )
