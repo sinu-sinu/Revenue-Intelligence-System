@@ -350,33 +350,41 @@ class WinProbabilityTrainer:
         X_train: pd.DataFrame,
         y_train: pd.Series,
         X_val: Optional[pd.DataFrame] = None,
-        y_val: Optional[pd.Series] = None
+        y_val: Optional[pd.Series] = None,
+        save_shap_background: bool = True,
+        shap_background_samples: int = 100
     ) -> Dict[str, Any]:
         """
         Run full training pipeline.
-        
+
         Args:
             X_train: Training features
             y_train: Training target
             X_val: Validation features
             y_val: Validation target
-            
+            save_shap_background: Whether to save background data for SHAP
+            shap_background_samples: Number of samples for SHAP background
+
         Returns:
             Dictionary with training results
         """
         logger.info("=" * 60)
         logger.info("Starting full training pipeline")
         logger.info("=" * 60)
-        
+
         # Train baseline
         self.train_baseline(X_train, y_train)
-        
+
         # Train LightGBM
         self.train_lgbm(X_train, y_train, X_val, y_val)
-        
+
         # Calibrate
         self.calibrate(X_train, y_train)
-        
+
+        # Save SHAP background data for on-demand explanations
+        if save_shap_background:
+            self._save_shap_background(X_train, shap_background_samples)
+
         # Store metadata
         self.training_metadata = {
             "trained_at": datetime.utcnow().isoformat(),
@@ -387,10 +395,45 @@ class WinProbabilityTrainer:
             "numeric_features": self.numeric_features,
             "lgbm_params": self.LGBM_PARAMS,
         }
-        
+
         logger.info("Training pipeline complete")
-        
+
         return self.training_metadata
+
+    def _save_shap_background(
+        self,
+        X_train: pd.DataFrame,
+        n_samples: int = 100
+    ) -> None:
+        """
+        Save background data sample for SHAP explanations.
+
+        SHAP TreeExplainer uses background data to compute feature contributions.
+        We save a representative sample from training data for use during inference.
+
+        Args:
+            X_train: Training features (pre-encoding)
+            n_samples: Number of samples to save
+        """
+        logger.info(f"Saving SHAP background data ({n_samples} samples)...")
+
+        # Sample from training data
+        if len(X_train) > n_samples:
+            background_sample = X_train.sample(n_samples, random_state=42)
+        else:
+            background_sample = X_train.copy()
+
+        # Encode features using fitted encoders
+        background_encoded = self._encode_features(background_sample, fit=False)
+
+        # Get feature columns
+        feature_cols = [c for c in self.all_features if c in background_encoded.columns]
+
+        # Save as parquet for efficient loading
+        background_path = self.artifacts_dir / "shap_background.parquet"
+        background_encoded[feature_cols].to_parquet(background_path)
+
+        logger.info(f"SHAP background data saved to {background_path}")
     
     def predict_proba(self, X: pd.DataFrame, calibrated: bool = True) -> np.ndarray:
         """
