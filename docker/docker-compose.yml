@@ -1,10 +1,10 @@
 services:
-  # Streamlit Application
-  app:
+  # Streamlit Application (Phase 1 - still works!)
+  streamlit:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: revenue_intel_app
+    container_name: revenue_intel_streamlit
     environment:
       - MODEL_PATH=/app/models/artifacts
       - LOG_LEVEL=INFO
@@ -21,6 +21,49 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # FastAPI Backend (Phase 2)
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: revenue_intel_api
+    environment:
+      - MODEL_PATH=/app/models/artifacts
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ../app:/app/app
+      - ../api:/app/api
+      - ../core:/app/core
+      - ../models:/app/models
+      - ../data:/app/data
+      - ../dataset:/app/dataset
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Vue.js Frontend (Phase 2)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: revenue_intel_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
