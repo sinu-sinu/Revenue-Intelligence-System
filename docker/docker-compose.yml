@@ -1,31 +1,5 @@
 services:
-  # Streamlit Application (Phase 1 - still works!)
-  streamlit:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: revenue_intel_streamlit
-    environment:
-      - MODEL_PATH=/app/models/artifacts
-      - LOG_LEVEL=INFO
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ../app:/app/app
-      - ../core:/app/core
-      - ../models:/app/models
-      - ../data:/app/data
-      - ../dataset:/app/dataset
-      - ../logs:/app/logs
-    ports:
-      - "8501:8501"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # FastAPI Backend (Phase 2)
+  # FastAPI Backend
   api:
     build:
       context: ..
@@ -51,7 +25,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Vue.js Frontend (Phase 2)
+  # Vue.js Frontend
   frontend:
     build:
       context: ../frontend
