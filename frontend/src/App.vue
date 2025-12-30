@@ -99,7 +99,7 @@ function toggleSidebar() {
       <div v-if="!isCollapsed" class="px-4 py-6 border-t border-surface-800/50">
         <div class="px-4 py-3 rounded-xl bg-surface-800/30 border border-surface-700/30">
           <p class="text-xs text-surface-500 font-medium">Model Version</p>
-          <p class="text-sm text-surface-300 font-mono mt-1">LightGBM v2.1</p>
+          <p class="text-sm text-surface-300 font-mono mt-1">LightGBM v4.6.0</p>
           <div class="flex items-center gap-3 mt-2">
             <span class="text-xs text-surface-500">AUC: <span class="text-accent-400 font-mono">0.58</span></span>
             <span class="text-xs text-surface-500">ECE: <span class="text-accent-400 font-mono">0.031</span></span>
