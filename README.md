@@ -1,299 +1,395 @@
 # Revenue Intelligence System
 
-> AI-powered decision support for sales pipeline management
+> Production-ready ML system for sales pipeline risk analysis and revenue forecasting
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5+-brightgreen.svg)](https://vuejs.org/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-4.5+-orange.svg)](https://lightgbm.readthedocs.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An internal AI tool that helps sales leadership prioritize pipeline work, understand forecast risk, and intervene earlier using **explainable ML**.
-
-## 🎯 Core Principle
-
-**Decision support over automation** — This system surfaces where attention is most valuable and explains why, without changing CRM records or contacting customers.
+A decision-support system that helps sales leadership prioritize pipeline work, understand forecast risk, and intervene earlier using **explainable machine learning**. Built to demonstrate production ML engineering skills.
 
 ---
 
-## ✨ Features
+## What This System Does
 
-- **🎯 Risk Dashboard** - At-risk deals sorted by risk × value
-- **📊 Win Probability Model** - Calibrated predictions with SHAP explanations
-- **📈 Revenue Forecasting** - P10/P50/P90 projections with Monte Carlo simulation
-- **🔍 Deal Drill-Down** - Explainable risk drivers and suggested actions
-- **⚡ Real-Time Scoring** - Precomputed scores for fast UI rendering
+Sales teams struggle with thousands of open deals. Which ones need attention? Which will close this quarter? This system answers those questions with:
+
+1. **Risk Scoring** - Identifies deals most likely to slip or lose, ranked by potential revenue impact
+2. **Win Probability** - Calibrated predictions showing actual likelihood of closing
+3. **Revenue Forecasting** - Weekly projections with P10/P50/P90 confidence intervals
+4. **Model Explanations** - SHAP-based insights showing *why* a deal is at risk
+
+**Design Philosophy:** Decision support over automation. The system surfaces where attention is valuable and explains why, without modifying CRM records or contacting customers directly.
 
 ---
 
-## 🏗️ Architecture
+## Key Results
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Model AUC** | 0.58 | Win probability discrimination (limited by dataset signal) |
+| **Calibration** | Isotonic | Ensures 70% predictions win 70% of the time |
+| **API Response** | <50ms | Precomputed predictions for instant UI |
+| **Forecast Accuracy** | Monte Carlo | 1000 simulations per forecast window |
+
+*Note: The relatively low AUC reflects limited predictive signal in the demo dataset (MavenTech CRM), not model quality. Real CRM data typically yields AUC 0.70-0.85.*
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│        Streamlit UI (Phase 1)           │
-│     Decision Surfaces & Dashboards      │
-└────────────────┬────────────────────────┘
-                 │
-┌────────────────▼────────────────────────┐
-│         Core Business Logic             │
-│  ┌──────────┬──────────┬──────────┐     │
-│  │ Scoring  │ Forecast │ Explain  │     │
-│  └──────────┴──────────┴──────────┘     │
-└────────────────┬────────────────────────┘
-                 │
-┌────────────────▼────────────────────────┐
-│          Data Layer                     │
-│  ┌──────────┬──────────┬──────────┐     │
-│  │  CSV     │ Models   │ Features │     │
-│  │  Files   │ Artifacts│ Engine   │     │
-│  └──────────┴──────────┴──────────┘     │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend (Vue 3)                          │
+│   TypeScript • TailwindCSS • Vue Query • Chart.js                │
+│   Port: 3000                                                     │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ REST API
+┌───────────────────────────────▼─────────────────────────────────┐
+│                        Backend (FastAPI)                         │
+│   /api/deals    - List, filter, detail with risk drivers        │
+│   /api/deals/{id}/explanation - On-demand SHAP explanations     │
+│   /api/forecast - Monte Carlo revenue projections               │
+│   /api/health   - Container health check                        │
+│   Port: 8000                                                     │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │
+┌───────────────────────────────▼─────────────────────────────────┐
+│                     ML & Business Logic                          │
+│  ┌──────────────┬──────────────┬──────────────────────────────┐ │
+│  │ Risk Scorer  │ Win Prob     │ Revenue Forecast             │ │
+│  │ Composite    │ LightGBM     │ Monte Carlo                  │ │
+│  │ formula      │ + Isotonic   │ 1000 simulations             │ │
+│  └──────────────┴──────────────┴──────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │ SHAP Explainer - TreeExplainer for feature contributions   │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │
+┌───────────────────────────────▼─────────────────────────────────┐
+│                        Data Layer                                │
+│  CSV Files (dataset/) → Feature Engineering → Predictions       │
+│  Precomputed scores in data/predictions/latest_predictions.csv  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Data Flow:**
-1. CSV files (dataset/) → Feature engineering
-2. Generate predictions → Save to `data/predictions/latest_predictions.csv`
-3. Streamlit UI → Load predictions from CSV (cached)
-4. Display dashboards, risk scores, forecasts
+### Data Flow
 
-**Note:** For historical datasets (e.g., 2016-2017 demo data), the system automatically adjusts date calculations to simulate realistic scenarios.
+1. **Training**: CSV files → Feature engineering → LightGBM training → Model artifacts
+2. **Inference**: Raw deals → Feature enrichment → Win probability + Risk score → CSV cache
+3. **Serving**: API loads cached predictions → Frontend displays with filtering/sorting
+4. **Explanations**: On-demand SHAP calculation when user requests deal explanation
 
 ---
 
-## 🚀 Quick Start
+## Technology Stack
+
+### Backend
+- **Python 3.12** - Modern Python with type hints
+- **FastAPI** - High-performance async API framework
+- **Pydantic** - Data validation and serialization
+- **LightGBM 4.5** - Gradient boosting for win probability
+- **SHAP** - Model explainability with TreeExplainer
+- **scikit-learn** - Preprocessing, calibration, metrics
+
+### Frontend
+- **Vue 3** - Composition API with TypeScript
+- **Vite** - Fast build tooling
+- **TailwindCSS** - Utility-first styling (dark theme)
+- **Vue Query (TanStack)** - Server state management
+- **Chart.js** - Revenue forecast visualization
+- **Heroicons** - UI iconography
+
+### Infrastructure
+- **Docker** - Containerized deployment
+- **Docker Compose** - Multi-service orchestration
+- **Nginx** - Frontend static serving with API proxy
+
+---
+
+## Features
+
+### Risk Dashboard
+- Sortable deal table with risk scores
+- Multi-select filters (account, rep, product, risk level)
+- Risk score range slider
+- Summary metrics (total deals, at-risk revenue, average win probability)
+
+### Deal Detail
+- Full deal information with risk drivers
+- Recommended action based on risk category
+- **Model Explanation** - On-demand SHAP analysis showing:
+  - Features increasing win probability (green)
+  - Features decreasing win probability (red)
+  - Human-readable explanations for each factor
+
+### Revenue Forecast
+- Weekly revenue projections with confidence intervals
+- P10/P50/P90 bands from Monte Carlo simulation
+- Interactive Chart.js visualization
+- Configurable forecast horizon (4-12 weeks)
+
+---
+
+## Quick Start
 
 ### Prerequisites
+- Python 3.12+
+- Node.js 18+
+- Docker (optional)
 
-- Python 3.12+ (or 3.10+)
-- (Optional) Docker & Docker Compose
-
-### Option 1: Local Development (Recommended)
+### Option 1: Docker (Recommended)
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd revenue-intelligence
+cd docker
+docker-compose up
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Generate predictions (required before running app)
-python models/inference/predict.py
-
-# Start Streamlit app
-streamlit run app/main.py
-
-# Access the app at http://localhost:8501
+# Access:
+# - Frontend: http://localhost:3000
+# - API Docs: http://localhost:8000/docs
 ```
 
-### Option 2: Docker
+### Option 2: Local Development
 
 ```bash
-# Navigate to docker directory
-cd docker
+# Backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -e ".[api]"
 
-# Start the app
-docker-compose up app
+# Generate predictions (required first time)
+python models/inference/predict.py
 
-# Run training (optional)
-docker-compose --profile training up trainer
+# Start API
+uvicorn api.main:app --reload --port 8000
 
-# Access the app at http://localhost:8501
+# Frontend (new terminal)
+cd frontend
+npm install
+npm run dev
+
+# Access: http://localhost:5173 (API at http://localhost:8000)
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 revenue-intelligence/
-├── app/                   # Streamlit UI
-│   ├── main.py            # Entry point
-│   ├── config.py          # Configuration
-│   ├── pages/             # Multi-page app
-│   ├── components/        # Reusable UI components
-│   └── services/          # Data loading services
-├── core/                  # Business logic
-│   ├── data/              # Feature engineering
-│   ├── scoring/           # Risk & win probability
-│   ├── forecasting/       # Revenue forecasting
-│   └── explanations/      # SHAP explainability
-├── models/                # ML models
-│   ├── training/          # Training scripts
-│   ├── evaluation/        # Evaluation metrics
-│   ├── inference/         # Prediction generation
-│   └── artifacts/         # Saved models
-├── data/                  # Generated data
-│   └── predictions/       # Precomputed predictions
-├── dataset/               # Raw training data (CSV)
-├── docker/                # Docker configuration
-├── experiments/           # MLflow tracking
-├── tests/                 # Test suite
-├── notebooks/             # EDA & experiments
-└── plan/                  # Project planning docs
+├── api/                    # FastAPI backend
+│   ├── main.py             # Application entry
+│   ├── routes/             # API endpoints
+│   │   ├── deals.py        # /deals endpoints
+│   │   ├── forecast.py     # /forecast endpoint
+│   │   └── health.py       # /health endpoint
+│   ├── schemas/            # Pydantic models
+│   └── services/           # SHAP explainer service
+├── app/
+│   └── services/           # Shared data services
+│       ├── data_loader.py  # Prediction loading
+│       └── risk_calculator.py
+├── core/                   # Business logic
+│   ├── data/               # Feature engineering
+│   │   ├── preprocessor.py
+│   │   └── features.py
+│   ├── scoring/            # Risk scoring
+│   ├── forecasting/        # Monte Carlo forecasts
+│   └── explanations/       # SHAP explainer
+├── models/                 # ML pipeline
+│   ├── training/           # Model training
+│   │   ├── win_probability.py
+│   │   ├── time_to_close.py
+│   │   └── train_pipeline.py
+│   ├── evaluation/         # Metrics
+│   ├── inference/          # Prediction generation
+│   └── artifacts/          # Saved models
+├── frontend/               # Vue 3 SPA
+│   ├── src/
+│   │   ├── components/     # Reusable components
+│   │   ├── views/          # Page views
+│   │   ├── composables/    # Vue composables
+│   │   └── api/            # API client
+│   ├── Dockerfile
+│   └── nginx.conf
+├── dataset/                # Training data (CSV)
+├── data/predictions/       # Cached predictions
+├── docker/                 # Docker configuration
+│   ├── docker-compose.yml
+│   ├── Dockerfile.api
+│   └── Dockerfile.trainer
+└── pyproject.toml          # Python dependencies
 ```
 
 ---
 
-## 📊 Data
+## Dataset
 
-The system uses **CSV-based data storage** for simplicity and portability.
+The system includes the MavenTech CRM demo dataset:
 
-**Training Data** (`dataset/`):
-- `sales_pipeline.csv` - Deal/opportunity data
-- `accounts.csv` - Customer accounts
-- `sales_teams.csv` - Sales representatives
-- `products.csv` - Product catalog
+| File | Records | Description |
+|------|---------|-------------|
+| `sales_pipeline.csv` | ~8,800 | Opportunities with stages and outcomes |
+| `accounts.csv` | 85 | Customer companies |
+| `sales_teams.csv` | 35 | Sales representatives |
+| `products.csv` | 7 | Product catalog |
 
-**Generated Data** (`data/predictions/`):
-- `latest_predictions.csv` - Precomputed predictions with risk scores
-- `predictions_metadata.json` - Metadata about predictions
-
-**Demo Data:** Included MavenTech CRM dataset with ~8,800 opportunities from 2016-2017. The system automatically handles historical dates for realistic predictions (see [Technical Docs](docs/TECHNICAL_DOCS.md#historical-dataset-handling)).
-
-**Production Ready:** Design supports loading from:
+**Production Adaptation:** The data loader is designed for easy integration with:
 - Salesforce CSV exports
 - HubSpot exports
-- Custom CRM systems
-- Easy to adapt data loader for APIs
+- Custom CRM APIs (implement `DataLoader` interface)
 
 ---
 
-## 🤖 ML Models
+## ML Models
 
 ### Win Probability Model
-- **Algorithm:** LightGBM with calibration
-- **Output:** P(won) ∈ [0, 1]
-- **Features:** Time-based, rep performance, deal characteristics
-- **Explainability:** SHAP values for each prediction
+```
+Algorithm: LightGBM (gradient boosting)
+Calibration: Isotonic regression
+Output: P(won) ∈ [0, 1]
+Features: 15 (temporal, rep performance, deal characteristics)
+Training: Time-series split to prevent leakage
+```
+
+**Key Hyperparameters:**
+- `num_leaves`: 16 (prevents overfitting)
+- `max_depth`: 5
+- `min_data_in_leaf`: 50
+- `learning_rate`: 0.05
+- L1/L2 regularization enabled
 
 ### Risk Score
-- **Type:** Composite formula
-- **Range:** 0-100 (higher = more risk)
-- **Components:** Win probability, deal size, velocity, stagnation
+```
+Type: Composite formula (not ML)
+Range: 0-100 (higher = more risk)
+Components:
+  - Base: (1 - win_probability) × 50
+  - Stagnation: +30 if days_in_stage > 2× average
+  - Value: +10-20 based on deal size percentile
+```
 
-### Time-to-Close Model
-- **Algorithm:** Exponential distribution with age-based adjustments
-- **Output:** Days until close (7-120 day range)
-- **Use:** Weekly revenue forecasting with uncertainty bands
-
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=. --cov-report=html
+### Revenue Forecast
+```
+Method: Monte Carlo simulation (1000 runs)
+Per-deal: Bernoulli(win_prob) × deal_value × P(close_in_window)
+Aggregation: Weekly totals with P10/P50/P90 percentiles
 ```
 
 ---
 
-## 📈 Roadmap
+## API Reference
 
-### ✅ Phase 0: Foundation (Complete)
-- Project structure
-- Docker environment
-- CSV-based data storage
-- Basic Streamlit UI
+### Deals
 
-### ✅ Phase 1A: ML Pipeline (Complete)
-- Feature engineering
-- Model training & calibration
-- Risk scoring
-- Prediction generation
+```
+GET /api/deals
+  Query: account[], sales_agent[], product[], risk_category[]
+         min_risk_score, max_risk_score, sort_by, sort_order, limit
+  Returns: { deals: DealSummary[], total: int, limit: int }
 
-### ✅ Phase 1B: UI Enhancement (Complete)
-- Connect UI to models
-- Precomputed scoring
-- Interactive visualizations
-- Risk Dashboard
-- Deal Detail pages
-- Revenue Forecast
+GET /api/deals/{id}
+  Returns: DealDetail (includes risk_drivers, predicted_close_days)
 
-### 🚧 Phase 1C: Polish (In Progress)
-- Testing
-- Documentation ✅
-- Demo preparation
+GET /api/deals/{id}/explanation
+  Returns: DealExplanation (SHAP-based feature contributions)
 
-### 🔮 Phase 2: Vue Refactor (Optional)
-- FastAPI extraction
-- Vue 3 frontend
-- Role-based access
+GET /api/deals/summary
+  Returns: { total_deals, at_risk_revenue, high_risk_count, avg_win_probability }
 
----
-
-## 🛠️ Development
-
-### Code Style
-
-```bash
-# Format code
-black .
-isort .
-
-# Lint
-flake8 .
-
-# Type checking
-mypy .
+GET /api/deals/filters
+  Returns: Available filter options from data
 ```
 
-### Pre-commit Hooks
+### Forecast
 
+```
+POST /api/forecast
+  Body: { horizon_weeks?: int, period?: "week"|"month" }
+  Returns: { periods: ForecastPeriod[], summary: ForecastSummary }
+```
+
+Full OpenAPI documentation available at `/docs` when running the API.
+
+---
+
+## Why These Choices
+
+| Choice | Reasoning |
+|--------|-----------|
+| **LightGBM over XGBoost** | Faster training, native categorical handling, efficient on tabular data |
+| **Isotonic calibration** | Better for unbalanced datasets than Platt scaling |
+| **SHAP TreeExplainer** | Exact values for tree models, no approximation needed |
+| **Precomputed predictions** | Sub-50ms API response, predictions regenerated in batch |
+| **Vue over React** | Composition API maps well to this data-driven dashboard pattern |
+| **CSV over database** | Portability for demo; production would use Postgres/Snowflake |
+| **Monte Carlo forecast** | Captures full uncertainty distribution, not just point estimates |
+
+---
+
+## Future Extensibility
+
+1. **Real CRM Integration** - Replace CSV loader with Salesforce/HubSpot API
+2. **Database Backend** - PostgreSQL for predictions, Redis for caching
+3. **Real-time Scoring** - Kafka/Pub-Sub for streaming updates
+4. **A/B Testing** - Track intervention effectiveness
+5. **Additional Models** - Churn prediction, upsell probability
+6. **Alerting** - Slack/email notifications for high-risk deals
+
+---
+
+## Development
+
+### Code Quality
 ```bash
-pre-commit install
-pre-commit run --all-files
+black .           # Format
+isort .           # Sort imports
+flake8 .          # Lint
+mypy .            # Type check
+pytest            # Test
+```
+
+### Rebuild Models
+```bash
+# Full pipeline
+python models/training/train_pipeline.py
+
+# Just predictions
+python models/inference/predict.py
+
+# Docker training
+docker-compose --profile training up trainer
 ```
 
 ---
 
-## 📝 Documentation
+## Project Demonstrates
 
-- **[User Guide](docs/USER_GUIDE.md)** - End-user documentation for the Streamlit app
-- **[Technical Docs](docs/TECHNICAL_DOCS.md)** - Developer guide and API reference
-- [Project Roadmap](plan/00_ROADMAP.md)
-- [Data Specification](plan/06_DATA_SPEC.md)
-- [Model Specification](plan/07_MODEL_SPEC.md)
-- [Phase Plans](plan/)
+This project showcases production ML engineering practices:
 
----
-
-## 🤝 Contributing
-
-This is a portfolio project, but suggestions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+- **End-to-end ML pipeline** - Training, evaluation, inference, serving
+- **Model explainability** - SHAP integration for business stakeholders
+- **Calibrated predictions** - Probabilities that mean what they say
+- **Clean architecture** - Separation of concerns, testable components
+- **Modern stack** - FastAPI, Vue 3, TypeScript, Docker
+- **Production patterns** - Health checks, error handling, caching
+- **Thoughtful design** - Trade-offs documented, not over-engineered
 
 ---
 
-## 📄 License
+## Contact
 
-MIT License - see LICENSE file for details
-
----
-
-## 🙏 Acknowledgments
-
-- Inspired by modern RevOps best practices
-- Built with Streamlit, LightGBM, and CSV-based data storage
-- SHAP for model explainability
+**Author:** sinu
+**Email:** sinu28.sinu@gmail.com
 
 ---
 
-## 📧 Contact
+## License
 
-**Author:** [Your Name]  
-**Portfolio:** [Your Portfolio URL]  
-**LinkedIn:** [Your LinkedIn]
+MIT License - See LICENSE file for details.
 
 ---
 
-*Built as a demonstration of Staff AI Engineer competencies: ML engineering, explainability, production patterns, and thoughtful architecture.*
-
+*Built as a demonstration of ML Engineer competencies: ML engineering, explainability, production systems, and pragmatic architecture decisions.*
