@@ -165,11 +165,11 @@ npm run dev
 
 ## Author
 
-**[Your Name]** <!-- Replace with your name -->
+**SINU** 
 
-- GitHub: [your-github](https://github.com/your-username) <!-- Replace -->
-- LinkedIn: [your-linkedin](https://linkedin.com/in/your-profile) <!-- Replace -->
-- Email: your.email@example.com <!-- Replace -->
+- GitHub: [sinu-sinu](https://github.com/sinu-sinu)
+- LinkedIn: [sinu-sinu](https://linkedin.com/in/sinu-sinu)
+- Email: sinu28.sinu@gmail.com
 
 ---
 
